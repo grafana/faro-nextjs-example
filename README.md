@@ -26,12 +26,14 @@ To run the example, follow these steps:
 
 ## Setup
 
-In order to enable observe your next.js project with Grafana Cloud, the following 4 steps are needed:
+In order to enable observe your next.js project with Grafana Cloud, the following 5 steps are needed:
 
 1. enable the instrumentation hook
-2. create and conigure your backend instrumentation
+2. create and configure your backend instrumentation
 3. add frontend instrumentation
-4. enable configuration needed at runtime
+4. create a proxy for sending data to Grafana
+5. enable configuration needed at runtime
+
 
 ### 1. Enable the instrumentation hook
 
@@ -153,8 +155,45 @@ export default function FrontendObservability(){
   return null;
 }
 ```
+### 4. Create a proxy for sending data to Grafana
 
-### 4. Enable configuration needed at runtime
+Create a new API route `pages/api/faro.ts` in your Next.js project. This file will act as a proxy to forward telemetry data to Grafana Faro.
+
+```typescript
+import { NextApiRequest, NextApiResponse } from 'next'
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    // Format headers to be compatible with fetch
+    const headers = new Headers();
+    Object.entries(req.headers).forEach(([key, value]) => {
+      if (value) headers.append(key, Array.isArray(value) ? value.join(', ') : value);
+    });
+    // Forward to grafana faro
+    const response = await fetch(process.env.NEXT_PUBLIC_FARO_URL || '', {
+      method: req.method,
+      headers,
+      body: req.body ? JSON.stringify(req.body) : undefined,
+    });
+
+    // Send response to client
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    } else {
+      const text = await response.text();
+      return res.status(response.status).send(text);
+    }
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+```
+
+This proxy will handle requests from your frontend and forward them to the Grafana Faro endpoint specified in your environment variables.
+
+### 5. Enable configuration needed at runtime
 
 Create or add lines to a `.env` file in the root of your project with the following content:
 
