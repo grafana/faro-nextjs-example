@@ -50,7 +50,7 @@ module.exports = {
 Install the required packages:
 
 ```bash
-npm install @vercel/otel @opentelemetry/sdk-logs @opentelemetry/api-logs @opentelemetry/instrumentation
+npm install @vercel/otel @opentelemetry/sdk-logs @opentelemetry/api-logs @opentelemetry/instrumentation @opentelemetry/sdk-trace-node
 ```
 
 Create a new file `instrumentation.ts` in the root of your project. This file will contain the configuration for the OpenTelemetry instrumentation for the nodejs backend of your app.
