@@ -3,9 +3,11 @@
 import { faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
+const isClient = typeof window !== 'undefined';
+
 export default function FrontendObservability(){
-  // skip if already initialized
-  if (faro.api) {
+  // skip if already initialized or if not in a browser environment
+  if (!isClient || faro.api) {
     return null;
   }
 
