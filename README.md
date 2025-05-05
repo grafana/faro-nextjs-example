@@ -76,6 +76,8 @@ class SpanNameProcessor implements SpanProcessor {
             span.updateName("GET /_next/static");
         } else if (span.name.startsWith("GET /_next/data")) {
             span.updateName("GET /_next/data");
+        } else if (span.name.startsWith("GET /_next/image")) {
+            span.updateName("GET /_next/image");
         }
     }
     onEnd(span: ReadableSpan): void {
