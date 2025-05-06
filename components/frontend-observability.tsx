@@ -11,7 +11,7 @@ export default function FrontendObservability(){
 
   try {
     const faro = initializeFaro({
-      url: process.env.NEXT_PUBLIC_FARO_URL,
+      url: "/api/faro",
       app: {
         name: process.env.NEXT_PUBLIC_FARO_APP_NAME || 'unknown_service:webjs',
         namespace: process.env.NEXT_PUBLIC_FARO_APP_NAMESPACE || undefined,
