@@ -26,12 +26,13 @@ To run the example, follow these steps:
 
 ## Setup
 
-In order to enable observe your next.js project with Grafana Cloud, the following 4 steps are needed:
+In order to enable observe your next.js project with Grafana Cloud, the following 5 steps are needed:
 
 1. enable the instrumentation hook
 2. create and conigure your backend instrumentation
 3. add frontend instrumentation
 4. enable configuration needed at runtime
+5. enable client-side source maps and upload them to Faro
 
 ### 1. Enable the instrumentation hook
 
@@ -39,11 +40,14 @@ You _must_ enable the instrumentation through your `next.config.js` file.
 
 ```javascript
 module.exports = {
+  productionBrowserSourceMaps: true,
   experimental: {
     instrumentationHook: true,
   },
 };
 ```
+
+`productionBrowserSourceMaps: true` is required for step 5 below; if you are not uploading source maps to Faro you can omit it.
 
 ### 2. Create and configure backend instrumentation
 
@@ -179,3 +183,16 @@ OTEL_SERVICE_NAME=next-backend
 ## Customize resource attributes, namespace is a recommended attribute, here we set it to the same value as the frontend namespace to enable correlation
 OTEL_RESOURCE_ATTRIBUTES=service.namespace=nextjs-example
 ```
+
+### 5. Enable client-side source maps and upload them to Faro
+
+By default, Next.js does not emit source maps for the client-side production bundle, so errors captured by Faro in Frontend Observability show up with minified stack traces. Setting `productionBrowserSourceMaps: true` in `next.config.js` (see step 1) causes `next build` to emit `.map` files alongside the client JS under `.next/static/`.
+
+Generating the maps is only half the story — Grafana Cloud also needs them uploaded so it can symbolicate stack traces. In the Frontend Observability plugin in Grafana Cloud, open **Settings → Source Maps → Configure source map uploads** to find the upload endpoint, app ID, and stack ID, and to issue an API key.
+
+Upload options:
+
+- **Faro CLI** (`@grafana/faro-cli`) as a post-build step. Bundler-agnostic, so it works whether `next build` runs through webpack or Turbopack.
+- **Faro Webpack plugin** (`@grafana/faro-webpack-plugin`) wired into `next.config.js`'s `webpack` hook. Only applies when Next.js is using its webpack pipeline.
+
+Both also need a *bundle ID* to be associated with the deployed JS so Faro can match a captured error to the right map. The webpack plugin handles this automatically; with the CLI, use `faro-cli inject-bundle-id` against the built `.next/static/` files before uploading. See the Grafana Cloud Frontend Observability source map upload documentation for the current end-to-end recipe.
