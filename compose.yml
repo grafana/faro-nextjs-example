@@ -1,6 +1,6 @@
 services:
   otelcol:
-    image: otel/opentelemetry-collector-contrib:0.109.0
+    image: otel/opentelemetry-collector-contrib:0.166.0@sha256:3e18fe04181de50bdd72e23ad4a4d6214b54351e63d496f1c58127cc4541ad7f
     volumes:
       - ./otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
